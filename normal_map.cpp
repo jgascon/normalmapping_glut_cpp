@@ -1,11 +1,9 @@
 /*
+    Simple demo of normalmapping
 
-
-  Simple Demo for GLSL 2.0
-
-  www.lighthouse3d.com
-
+    Jorge Gascon Perez
 */
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -18,26 +16,26 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 
-#include <math.h>
-#define COS(X)   cos( (X) * 3.14159/180.0 )
-#define SIN(X)   sin( (X) * 3.14159/180.0 )
+static float LIGHT_MOVE_OFFSET = 0.5;
 
 using namespace std;
 
-GLuint v,f,f2,p;
-float posicion_luz[4] = {0.0, 0.0, 4.0, 0.0};
+GLuint program;
+float light_pos[4] = {0.0, 0.0, 1.0, 0.0};
 GLuint DiffuseMap;
 GLuint NormalMap;
-GLuint EarthClouds;
-GLint lightLoc, texLoc;
+GLint lightLoc;
 
 
 int global_last_x;
 int global_last_y;
 
-
-void textured_sphere(GLuint texture_descriptor0, GLuint texture_descriptor1, float radius, int slices, int stacks)
-{
+/*
+void textured_sphere(GLuint texture_descriptor0,
+                     GLuint texture_descriptor1,
+                     float radius,
+                     int slices,
+                     int stacks) {
     float alpha=0.0;
     float beta=0.0;
     float prev_0[3];
@@ -130,20 +128,19 @@ void textured_sphere(GLuint texture_descriptor0, GLuint texture_descriptor1, flo
     glEnd();
     glPopMatrix();
 }
+*/
 
 
+void textured_quad(GLuint texture_descriptor0, GLuint texture_descriptor1) {
 
-void textured_triangle(GLuint texture_descriptor0, GLuint texture_descriptor1) {
-
-    GLint tangent_id = glGetAttribLocation(p, "external_tangent");
+    GLint tangent_id = glGetAttribLocation(program, "external_tangent");
 
     if (tangent_id == GL_INVALID_OPERATION || tangent_id < 0) {
-        cout << "Petada gorda --> " << tangent_id << "\n";
+        cout << "ERROR at tangent --> " << tangent_id << "\n";
     }
 
     glPushMatrix();
         glColor4f (1.0, 1.0, 1.0, 1.0);
-        //Comenzamos el pintado de la textura sobre la esfera.
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D,  texture_descriptor0);
         glEnable(GL_TEXTURE_2D);
@@ -153,9 +150,7 @@ void textured_triangle(GLuint texture_descriptor0, GLuint texture_descriptor1) {
 
         glPolygonMode(GL_FRONT, GL_FILL);
 
-        //Triangle
         glBegin(GL_TRIANGLE_FAN);
-
             glVertexAttrib3f(tangent_id, 1.0f, 0.0f, 0.0f);
             glMultiTexCoord2d(GL_TEXTURE1, 0.0f, 1.0f);
             glMultiTexCoord2d(GL_TEXTURE2, 0.0f, 1.0f);
@@ -182,21 +177,21 @@ void textured_triangle(GLuint texture_descriptor0, GLuint texture_descriptor1) {
 
         glEnd();
     glPopMatrix();
-}
+} //void textured_quad(GLuint texture_descriptor0, GLuint texture_descriptor1)
 
 
 
 GLuint loadTexture(string filename) {
     SDL_Surface * surface;
     GLuint texture;
-    //Cuando queremos cargar una textura.
+
     if ( (surface = IMG_Load(filename.c_str())) ) {
         printf("Textura de %dx%d\n",surface->w, surface->h);
         glGenTextures( 1, &texture );
         glBindTexture( GL_TEXTURE_2D, texture);
         glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
         glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-        glTexImage2D( GL_TEXTURE_2D, 0, 4, surface->w, surface->h, 0,
+        glTexImage2D(GL_TEXTURE_2D, 0, 4, surface->w, surface->h, 0,
                      GL_RGBA, GL_UNSIGNED_BYTE, surface->pixels );
         SDL_FreeSurface( surface );
         return texture;
@@ -205,12 +200,11 @@ GLuint loadTexture(string filename) {
         //SDL_Quit();
         return 0;
     }
-}
+} //GLuint loadTexture(string filename)
 
 
 
 void changeSize(int w, int h) {
-
     // Prevent a divide by zero, when window is too short
     // (you cant make a window of zero width).
     if(h == 0)
@@ -227,22 +221,17 @@ void changeSize(int w, int h) {
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     glTranslatef(0.0, 0.0, -5.0);
-}
+} //void changeSize(int w, int h)
 
 
 
-// El metodo de pintado pinta simplemente una tetera.
 void renderScene(void) {
-
     static GLuint descriptor_del_dibujo = glGenLists(1);
-    static bool is_clean = false;
-
+    static bool is_clean = true;
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    if (is_clean == false)
-    {
+    if (is_clean) {
         glNewList(descriptor_del_dibujo, GL_COMPILE);
-            //glLightfv(GL_LIGHT0, GL_POSITION, posicion_luz);
             glPushMatrix();
                 float mat[4];
                 mat[0] = 0.2;
@@ -254,31 +243,29 @@ void renderScene(void) {
                 mat[1] = 0.8;
                 mat[2] = 0.8;
                 glMaterialfv(GL_FRONT, GL_DIFFUSE, mat);
-                mat[0] = 0.9;
-                mat[1] = 0.9;
-                mat[2] = 0.9;
+                mat[0] = 1.0;
+                mat[1] = 1.0;
+                mat[2] = 1.0;
                 glMaterialfv(GL_FRONT, GL_SPECULAR, mat);
                 glMaterialf(GL_FRONT, GL_SHININESS, 0.078125 * 128.0);
-            //glutSolidSphere(10, 360, 180);
-            //glutSolidCube(10);
-            //glutSolidTeapot(10);
-                //textured_sphere(Earth, 1, 25, 15);
                 //textured_sphere(NormalMap, DiffuseMap, 1, 10, 10);
-                textured_triangle(NormalMap, DiffuseMap);
+                textured_quad(NormalMap, DiffuseMap);
             glPopMatrix();
         glEndList();
-    }
-    glUseProgram(p);
+        is_clean = false;
+    }; //if (is_clean)
+
+    glUseProgram(program);
     glCallList(descriptor_del_dibujo);
-    glUseProgram(0);
-    //Pintando donde esta la luz.
+    //glUseProgram(0);
+
     glDisable(GL_LIGHTING);
     glDisable(GL_TEXTURE_2D);
     glPointSize(14.0);
     glEnable(GL_POINT_SMOOTH);
     glColor4f(1.0, 0.0, 0.0, 1.0);
     glBegin(GL_POINTS);
-        glVertex3fv(posicion_luz);
+        glVertex3fv(light_pos);
     glEnd();
     glPointSize(1.0);
     glColor4f(1.0, 1.0, 1.0, 1.0);
@@ -286,60 +273,52 @@ void renderScene(void) {
     glEnable(GL_LIGHTING);
 
     glutSwapBuffers();
-}
+} //void renderScene(void)
 
 
 
 void processNormalKeys(unsigned char key, int x, int y) {
     switch (key){
         case 'w':
-            posicion_luz[1] += 0.5;
+            light_pos[1] += LIGHT_MOVE_OFFSET;
             break;
         case 's':
-            posicion_luz[1] -= 0.5;
+            light_pos[1] -= LIGHT_MOVE_OFFSET;
             break;
         case 'a':
-            posicion_luz[0] -= 0.5;
+            light_pos[0] -= LIGHT_MOVE_OFFSET;
             break;
         case 'd':
-            posicion_luz[0] += 0.5;
+            light_pos[0] += LIGHT_MOVE_OFFSET;
             break;
-        case 27:
+        case 27: //ESC
             exit(0);
             break;
     }
-    printf("Posicion luz (%f %f %f)\n",posicion_luz[0], posicion_luz[1], posicion_luz[2]);
-    glLightfv(GL_LIGHT0, GL_POSITION, posicion_luz);
+    printf("Light position (%f %f %f)\n",light_pos[0], light_pos[1], light_pos[2]);
+    glLightfv(GL_LIGHT0, GL_POSITION, light_pos);
     glutPostRedisplay();
-}
+} //void processNormalKeys(unsigned char key, int x, int y)
 
 
-void setShaders() {
 
+void setShaders(string vertex_shader_filename, string fragment_shader_filename) {
     GLsizei LogLength = 500;
     GLchar compilationLog[LogLength];
     GLsizei lengthObtained;
 
-    char *vs = NULL,*fs = NULL;//,*fs2 = NULL;
-    //Basicamente le decimos a OpenGL que cree los shaders.
-    //Vamos a crear un shader de vertices y otro de fragmentos (pixels).
-    v = glCreateShader(GL_VERTEX_SHADER);
-    f = glCreateShader(GL_FRAGMENT_SHADER);
+    GLuint v = glCreateShader(GL_VERTEX_SHADER);
+    GLuint f = glCreateShader(GL_FRAGMENT_SHADER);
 
-    // El codigo fuente de los programas shader esta en sendos ficheros, con esta
-    // funcion se leen los ficheros y se cargan en una cadena de caracteres.
-    vs = textFileRead("../normal_map.vert");
-    fs = textFileRead("../normal_map.frag");
+    char * vs = textFileRead(vertex_shader_filename.c_str());
+    char * fs = textFileRead(fragment_shader_filename.c_str());
     const char * ff = fs;
     const char * vv = vs;
-    //Se le pasan las cadenas de caracteres a cada uno de los shaders creados.
-    glShaderSource(v, 1, &vv,NULL);
-    glShaderSource(f, 1, &ff,NULL);
-    //Cuando los shaders ya tengan en codigo, podemos borrar los strings originales.
+    glShaderSource(v, 1, &vv, NULL);
+    glShaderSource(f, 1, &ff, NULL);
     free(vs);
     free(fs);
 
-    //Ahora toca compilar el codigo de los shaders a su codigo nativo.
     glCompileShader(v);
     glGetShaderInfoLog(v, LogLength, &lengthObtained,  compilationLog);
     if (lengthObtained>0) { printf("Log del Vertex Shader \n %s\n", compilationLog); }
@@ -347,19 +326,20 @@ void setShaders() {
     glCompileShader(f);
     glGetShaderInfoLog(f, LogLength, &lengthObtained,  compilationLog);
     if (lengthObtained>0) { printf("Log del Fragment Shader \n %s\n", compilationLog); }
-    //Finalmente se crea un ensamblado indicando el orden en el que se ejecutaran los shaders.
-    p = glCreateProgram();
-    glAttachShader(p,f);
-    glAttachShader(p,v);
-    //Se enlaza el programa y ya estamos listos.
-    glLinkProgram(p);
-    glUseProgram(p);
-}
+    program = glCreateProgram();
+    glAttachShader(program,f);
+    glAttachShader(program,v);
+
+    glDeleteShader(f);
+    glDeleteShader(v);
+
+    glLinkProgram(program);
+    glUseProgram(program);
+} //void setShaders(string vertex_shader_filename, string fragment_shader_filename)
 
 
 
 static void mouse_Motion(int x, int y) {
-
     static float rotation_x = 0.0f;
     static float rotation_y = 0.0f;
     static float centre_distance = 5.0f;
@@ -388,7 +368,6 @@ static void mouse_Motion(int x, int y) {
     }
 
     glMatrixMode(GL_MODELVIEW);
-    //Moving the camera around the scene.
     glLoadIdentity();
     glTranslatef(-camera_right, 0.0, -centre_distance);
     glRotatef(rotation_x, 1, 0, 0);
@@ -399,15 +378,14 @@ static void mouse_Motion(int x, int y) {
     global_last_x = x;
     global_last_y = y;
     glutPostRedisplay();
-}
+} //static void mouse_Motion(int x, int y)
 
 
 
 static void click_Mouse(int button, int state, int x, int y) {
     global_last_x = x;
     global_last_y = y;
-}
-
+} //static void click_Mouse(int button, int state, int x, int y)
 
 
 
@@ -436,52 +414,39 @@ int main(int argc, char **argv) {
     glClearColor(0.0, 0.0, 0.0, 1.0);
     //glEnable(GL_CULL_FACE);
 
-    //Activacion de las texturas
     NormalMap = loadTexture("../images/earth_normal.png");
     DiffuseMap = loadTexture("../images/earth.png");
 
-    // Funcion que activa los shaders
-    setShaders();
+    setShaders("../normal_map.vert", "../normal_map.frag");
     GLint n_texturas;
     glGetIntegerv(GL_MAX_TEXTURE_UNITS, &n_texturas);
-    printf("Esta tarjeta tiene %d unidades de textura\n",n_texturas);
+    printf("Texture units of this GPU [%d]\n",n_texturas);
 
-    //Mapa normal de la tierra
-    texLoc = glGetUniformLocation(p, "NormalMap");
+    GLuint texLoc = glGetUniformLocation(program, "NormalMap");
     glUniform1i(texLoc, NormalMap);
 
-    texLoc = glGetUniformLocation(p, "DiffuseMap");
+    texLoc = glGetUniformLocation(program, "DiffuseMap");
     glUniform1i(texLoc, DiffuseMap);
 
-    lightLoc = glGetUniformLocation(p, "LightPosition");
+    lightLoc = glGetUniformLocation(program, "LightPosition");
     glUniform3f(lightLoc, 0.0, 0.0, 10.0);
 
     glTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL );
 
     glScalef(0.5, 0.5, 0.5);
 
-    glLightfv(GL_LIGHT0, GL_POSITION, posicion_luz);
-    glColor4f(1.0, 0.0, 0.0, 1.0);
-    glBegin(GL_POINTS);
-        glVertex3f(posicion_luz[0], posicion_luz[1], posicion_luz[2]);
-    glEnd();
+    glLightfv(GL_LIGHT0, GL_POSITION, light_pos);
 
-////////////////////////////// MATERIALES //////////////////////////////////////
-
-    //Creamos los parametros de la luz
     GLfloat ambientLight[] = { 0.2f, 0.2f, 0.2f, 1.0f };
     GLfloat diffuseLight[] = { 0.8f, 0.8f, 0.8, 1.0f };
     GLfloat specularLight[] = { 0.5f, 0.5f, 0.5f, 1.0f };
 
-    //Creamos la luz con los parametros anteriormente indicados.
     glLightfv(GL_LIGHT0, GL_AMBIENT, ambientLight);
     glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuseLight);
     glLightfv(GL_LIGHT0, GL_SPECULAR, specularLight);
 
-
     glutMainLoop();
 
-    // just for compatibiliy purposes
     return 0;
-}
+} //int main(int argc, char **argv)
 

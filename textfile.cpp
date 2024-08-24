@@ -9,11 +9,11 @@
 // or explicit are given
 //////////////////////////////////////////////////////////////////////
 
+#include <stdio.h>
+#include <string.h>
 #include "textfile.h"
 
 char * textFileRead(string fn) {
-
-
 	FILE *fp;
 	char *content = NULL;
 
@@ -22,10 +22,9 @@ char * textFileRead(string fn) {
 	fp = fopen(fn.c_str(),"rt");
 
 	if (fp != NULL) {
-    
-    fseek(fp, 0, SEEK_END);
-    count = ftell(fp);
-    rewind(fp);
+        fseek(fp, 0, SEEK_END);
+        count = ftell(fp);
+        rewind(fp);
 
 		if (count > 0) {
 			content = (char *)malloc(sizeof(char) * (count+1));

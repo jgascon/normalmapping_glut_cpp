@@ -9,14 +9,13 @@
 #ifndef TEXTFILE_H
 #define TEXTFILE_H
 
-#include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <string>
 
 using namespace std;
 
 char *textFileRead(string fn);
+
 int textFileWrite(char *fn, char *s);
 
 #endif

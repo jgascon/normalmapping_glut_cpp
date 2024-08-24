@@ -2,7 +2,7 @@
 //Tangente recibida desde la aplicación principal.
 attribute vec3 external_tangent;
 
-//Variables que deben ir desde el vertex shader al fragment shader, estas 
+//Variables que deben ir desde el vertex shader al fragment shader, estas
 //variables van cambiando y se van interpolando de un vertice al siguiente.
 
 //Las variables varying tambien permiten pasar informacion de un vertice a los
