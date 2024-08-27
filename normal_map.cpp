@@ -134,49 +134,43 @@ void textured_sphere(GLuint texture_descriptor0,
 void textured_quad(GLuint texture_descriptor0, GLuint texture_descriptor1) {
 
     GLint tangent_id = glGetAttribLocation(program, "external_tangent");
-
     if (tangent_id == GL_INVALID_OPERATION || tangent_id < 0) {
         cout << "ERROR at tangent --> " << tangent_id << "\n";
     }
 
-    glPushMatrix();
-        glColor4f (1.0, 1.0, 1.0, 1.0);
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D,  texture_descriptor0);
-        glEnable(GL_TEXTURE_2D);
-        glActiveTexture(GL_TEXTURE2);
-        glBindTexture(GL_TEXTURE_2D,  texture_descriptor1);
-        glEnable(GL_TEXTURE_2D);
+    glColor4f (1.0, 1.0, 1.0, 1.0);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D,  texture_descriptor0);
+    glActiveTexture(GL_TEXTURE2);
+    glBindTexture(GL_TEXTURE_2D,  texture_descriptor1);
 
-        glPolygonMode(GL_FRONT, GL_FILL);
+    glPolygonMode(GL_FRONT, GL_FILL);
 
-        glBegin(GL_TRIANGLE_FAN);
-            glVertexAttrib3f(tangent_id, 1.0f, 0.0f, 0.0f);
-            glMultiTexCoord2d(GL_TEXTURE1, 0.0f, 1.0f);
-            glMultiTexCoord2d(GL_TEXTURE2, 0.0f, 1.0f);
-            glNormal3f(0.0f, 0.0f, 1.0f);
-            glVertex3f(-2.0f, -2.0f, 0.0f);
+    glBegin(GL_TRIANGLE_FAN);
+        glVertexAttrib3f(tangent_id, 1.0f, 0.0f, 0.0f);
+        glMultiTexCoord2d(GL_TEXTURE1, 0.0f, 1.0f);
+        glMultiTexCoord2d(GL_TEXTURE2, 0.0f, 1.0f);
+        glNormal3f(0.0f, 0.0f, 1.0f);
+        glVertex3f(-2.0f, -2.0f, 0.0f);
 
-            glVertexAttrib3f(tangent_id, 1.0f, 0.0f, 0.0f);
-            glMultiTexCoord2d(GL_TEXTURE1, 1.0f, 1.0f);
-            glMultiTexCoord2d(GL_TEXTURE2, 1.0f, 1.0f);
-            glNormal3f(0.0f, 0.0f, 1.0f);
-            glVertex3f(2.0f, -2.0f, 0.0f);
+        glVertexAttrib3f(tangent_id, 1.0f, 0.0f, 0.0f);
+        glMultiTexCoord2d(GL_TEXTURE1, 1.0f, 1.0f);
+        glMultiTexCoord2d(GL_TEXTURE2, 1.0f, 1.0f);
+        glNormal3f(0.0f, 0.0f, 1.0f);
+        glVertex3f(2.0f, -2.0f, 0.0f);
 
-            glVertexAttrib3f(tangent_id, 1.0f, 0.0f, 0.0f);
-            glMultiTexCoord2d(GL_TEXTURE1, 1.0f, 0.0f);
-            glMultiTexCoord2d(GL_TEXTURE2, 1.0f, 0.0f);
-            glNormal3f(0.0f, 0.0f, 1.0f);
-            glVertex3f(2.0f, 2.0f, 0.0f);
+        glVertexAttrib3f(tangent_id, 1.0f, 0.0f, 0.0f);
+        glMultiTexCoord2d(GL_TEXTURE1, 1.0f, 0.0f);
+        glMultiTexCoord2d(GL_TEXTURE2, 1.0f, 0.0f);
+        glNormal3f(0.0f, 0.0f, 1.0f);
+        glVertex3f(2.0f, 2.0f, 0.0f);
 
-            glVertexAttrib3f(tangent_id, 1.0f, 0.0f, 0.0f);
-            glMultiTexCoord2d(GL_TEXTURE1, 0.0f, 0.0f);
-            glMultiTexCoord2d(GL_TEXTURE2, 0.0f, 0.0f);
-            glNormal3f(0.0f, 0.0f, 1.0f);
-            glVertex3f(-2.0f, 2.0f, 0.0f);
-
-        glEnd();
-    glPopMatrix();
+        glVertexAttrib3f(tangent_id, 1.0f, 0.0f, 0.0f);
+        glMultiTexCoord2d(GL_TEXTURE1, 0.0f, 0.0f);
+        glMultiTexCoord2d(GL_TEXTURE2, 0.0f, 0.0f);
+        glNormal3f(0.0f, 0.0f, 1.0f);
+        glVertex3f(-2.0f, 2.0f, 0.0f);
+    glEnd();
 } //void textured_quad(GLuint texture_descriptor0, GLuint texture_descriptor1)
 
 
@@ -186,7 +180,7 @@ GLuint loadTexture(string filename) {
     GLuint texture;
 
     if ( (surface = IMG_Load(filename.c_str())) ) {
-        printf("Textura de %dx%d\n",surface->w, surface->h);
+        printf("Texture size: %dx%d\n",surface->w, surface->h);
         glGenTextures( 1, &texture );
         glBindTexture( GL_TEXTURE_2D, texture);
         glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
@@ -226,51 +220,25 @@ void changeSize(int w, int h) {
 
 
 void renderScene(void) {
-    static GLuint descriptor_del_dibujo = glGenLists(1);
+    static GLuint list_id = glGenLists(1);
     static bool is_clean = true;
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     if (is_clean) {
-        glNewList(descriptor_del_dibujo, GL_COMPILE);
-            glPushMatrix();
-                float mat[4];
-                mat[0] = 0.2;
-                mat[1] = 0.2;
-                mat[2] = 0.2;
-                mat[3] = 1.0;
-                glMaterialfv(GL_FRONT, GL_AMBIENT, mat);
-                mat[0] = 0.8;
-                mat[1] = 0.8;
-                mat[2] = 0.8;
-                glMaterialfv(GL_FRONT, GL_DIFFUSE, mat);
-                mat[0] = 1.0;
-                mat[1] = 1.0;
-                mat[2] = 1.0;
-                glMaterialfv(GL_FRONT, GL_SPECULAR, mat);
-                glMaterialf(GL_FRONT, GL_SHININESS, 0.078125 * 128.0);
-                //textured_sphere(NormalMap, DiffuseMap, 1, 10, 10);
-                textured_quad(NormalMap, DiffuseMap);
-            glPopMatrix();
+        glNewList(list_id, GL_COMPILE);
+            textured_quad(NormalMap, DiffuseMap);
         glEndList();
         is_clean = false;
-    }; //if (is_clean)
+    };
 
-    glUseProgram(program);
-    glCallList(descriptor_del_dibujo);
-    //glUseProgram(0);
+    glCallList(list_id);
 
-    glDisable(GL_LIGHTING);
-    glDisable(GL_TEXTURE_2D);
     glPointSize(14.0);
     glEnable(GL_POINT_SMOOTH);
-    glColor4f(1.0, 0.0, 0.0, 1.0);
     glBegin(GL_POINTS);
         glVertex3fv(light_pos);
     glEnd();
     glPointSize(1.0);
-    glColor4f(1.0, 1.0, 1.0, 1.0);
-    glEnable(GL_TEXTURE_2D);
-    glEnable(GL_LIGHTING);
 
     glutSwapBuffers();
 } //void renderScene(void)
@@ -339,7 +307,7 @@ void setShaders(string vertex_shader_filename, string fragment_shader_filename) 
 
 
 
-static void mouse_Motion(int x, int y) {
+static void mouseMotion(int x, int y) {
     static float rotation_x = 0.0f;
     static float rotation_y = 0.0f;
     static float centre_distance = 5.0f;
@@ -378,14 +346,14 @@ static void mouse_Motion(int x, int y) {
     global_last_x = x;
     global_last_y = y;
     glutPostRedisplay();
-} //static void mouse_Motion(int x, int y)
+} //static void mouseMotion(int x, int y)
 
 
 
-static void click_Mouse(int button, int state, int x, int y) {
+static void clickMouse(int button, int state, int x, int y) {
     global_last_x = x;
     global_last_y = y;
-} //static void click_Mouse(int button, int state, int x, int y)
+} //static void clickMouse(int button, int state, int x, int y)
 
 
 
@@ -394,16 +362,18 @@ int main(int argc, char **argv) {
     glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA);
     glutInitWindowPosition(100,100);
     glutInitWindowSize(500,500);
-    glutCreateWindow("Shaders Test");
+    glutCreateWindow("Normal Mapping");
 
     glutDisplayFunc(renderScene);
 
-    glutMouseFunc(click_Mouse);
-    glutMotionFunc(mouse_Motion);
+    glutMouseFunc(clickMouse);
+    glutMotionFunc(mouseMotion);
 
     //glutIdleFunc(renderScene);
     glutReshapeFunc(changeSize);
     glutKeyboardFunc(processNormalKeys);
+    //glutSpecialFunc(void (*func) (int key, int x, int y));
+
     glShadeModel(GL_SMOOTH);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_TEXTURE_2D);
@@ -430,8 +400,6 @@ int main(int argc, char **argv) {
 
     lightLoc = glGetUniformLocation(program, "LightPosition");
     glUniform3f(lightLoc, 0.0, 0.0, 10.0);
-
-    glTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL );
 
     glScalef(0.5, 0.5, 0.5);
 
