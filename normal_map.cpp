@@ -8,6 +8,7 @@
 #include <stdlib.h>
 
 #define GL_GLEXT_PROTOTYPES
+#include <GL/glew.h>
 #include <GL/glut.h>
 #include "textfile.h"
 #include <iostream>
@@ -204,7 +205,7 @@ void changeSize(int w, int h) {
     if(h == 0)
         h = 1;
 
-    float ratio = 1.0 * w / h;
+    float ratio = 1.0f * w / h;
 
     // Reset the coordinate system before modifying
     glMatrixMode(GL_PROJECTION);
@@ -271,7 +272,7 @@ void processNormalKeys(unsigned char key, int x, int y) {
 
 
 void setShaders(string vertex_shader_filename, string fragment_shader_filename) {
-    GLsizei LogLength = 500;
+    const GLsizei LogLength = 500;
     GLchar compilationLog[LogLength];
     GLsizei lengthObtained;
 
@@ -318,8 +319,8 @@ static void mouseMotion(int x, int y) {
     static float center_z = 0.0f;
 
     //Rotating the camera around our scene.
-    rotation_x += (y - global_last_y) * 0.3;
-    rotation_y += (x - global_last_x) * 0.3;
+    rotation_x += (y - global_last_y) * 0.3f;
+    rotation_y += (x - global_last_x) * 0.3f;
 
     if (rotation_y > 60.0f) {
         rotation_y = 60.0f;
@@ -358,11 +359,18 @@ static void clickMouse(int button, int state, int x, int y) {
 
 
 int main(int argc, char **argv) {
+    cout << "Starting" << endl;
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA);
     glutInitWindowPosition(100,100);
     glutInitWindowSize(500,500);
     glutCreateWindow("Normal Mapping");
+    
+    GLenum err = glewInit();
+    if (err != GLEW_OK) {
+        cout << "ERROR: GLEW" << endl;
+        exit(1);
+    }
 
     glutDisplayFunc(renderScene);
 
@@ -406,7 +414,7 @@ int main(int argc, char **argv) {
     glLightfv(GL_LIGHT0, GL_POSITION, light_pos);
 
     GLfloat ambientLight[] = { 0.2f, 0.2f, 0.2f, 1.0f };
-    GLfloat diffuseLight[] = { 0.8f, 0.8f, 0.8, 1.0f };
+    GLfloat diffuseLight[] = { 0.8f, 0.8f, 0.8f, 1.0f };
     GLfloat specularLight[] = { 0.5f, 0.5f, 0.5f, 1.0f };
 
     glLightfv(GL_LIGHT0, GL_AMBIENT, ambientLight);
