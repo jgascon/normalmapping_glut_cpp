@@ -131,8 +131,8 @@ void textured_sphere(GLuint texture_descriptor0,
 */
 
 
-void textured_quad(GLuint texture_descriptor0, GLuint texture_descriptor1) {
 
+void textured_quad(GLuint texture_descriptor0, GLuint texture_descriptor1) {
     GLint tangent_id = glGetAttribLocation(program, "external_tangent");
     if (tangent_id == GL_INVALID_OPERATION || tangent_id < 0) {
         cout << "ERROR at tangent --> " << tangent_id << "\n";
@@ -400,6 +400,7 @@ int main(int argc, char **argv) {
 
     lightLoc = glGetUniformLocation(program, "LightPosition");
     glUniform3f(lightLoc, 0.0, 0.0, 10.0);
+
 
     glScalef(0.5, 0.5, 0.5);
 

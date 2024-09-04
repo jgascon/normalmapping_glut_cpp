@@ -25,4 +25,3 @@ void main() {
     color += material_ambient.rgba * diffuse_tex;
     gl_FragColor = color;
 }
-
